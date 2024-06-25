@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require('express');
 const mongoose = require("mongoose");
 
@@ -11,7 +12,7 @@ const deckRoute = require('./route/deckRoute');
 const PORT = process.env.PORT || 3000;
 
 async function main() {
-    const uri = "mongodb+srv://nguyenhuynh:PhoneQuery9497+@atlascluster.zengp2a.mongodb.net/funLearning?retryWrites=true&w=majority&appName=AtlasCluster"
+    const uri = process.env.MONGODB_URL;
     await mongoose.connect(uri);
 }
 
