@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const deckController = require('../conroller/deckController');
+const deckController = require('../controller/deckController');
 const verifyToken = require('../utility/VerifyToken');
 
 router.get('/decks', verifyToken, deckController.get_decks);
