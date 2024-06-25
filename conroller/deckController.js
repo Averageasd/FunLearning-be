@@ -29,7 +29,6 @@ exports.create_deck = [
     async (req, res, next) => {
 
         try {
-            console.log('name of new deck ', req.body.name);
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 console.log(errors);
