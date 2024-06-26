@@ -5,19 +5,30 @@ const constant = require("../constant/Constants");
 const jwt = require('jsonwebtoken');
 const errorMessages = require('../constant/ErrorMessages');
 const validations = require('../validation/validations');
+const mongoose = require('mongoose');
 
 
 exports.get_deck_detail = async (req, res, next) => {
-    //TODO : get detail of deck
     jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
-        const userId = authData.user._id;
-
+        try {
+            if (err) {
+                res.status(403).json({status: 403, message: errorMessages.VALIDATION_ERROR_MESSAGE});
+                return;
+            }
+            const existingDeck = await DeckModel.findById(req.params.id).exec();
+            if (!existingDeck) {
+                res.status(400).json({status: 400, message: errorMessages.BAD_REQUEST_MESSAGE});
+                return;
+            }
+            res.status(200).json({status: 200, deck: existingDeck});
+        } catch (e) {
+            res.status(500).json({status: 500, message: errorMessages.SERVER_ERROR_MESSAGE});
+        }
     });
 
 };
 
 exports.get_decks = async (req, res, next) => {
-    //TODO: get all decks with pagination
     jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
         const userId = authData.user._id;
         try {
@@ -36,7 +47,6 @@ exports.get_decks = async (req, res, next) => {
             const decks = await DeckModel.find({user: userId}).skip(skipItemCount).limit(constant.DECK_PER_PAGE).exec();
             res.status(200).json({decks: decks, hasMoreItems: hasMoreItems});
         } catch (e) {
-            console.log(e);
             res.status(500).json({status: 500, message: errorMessages.SERVER_ERROR_MESSAGE});
         }
     })
@@ -67,9 +77,9 @@ exports.create_deck = [
                 const curUser = await UserModel.findById(userId).exec();
                 const updatedDecks = [...curUser.decks];
                 updatedDecks.push(newDeck._id);
-                const updatedUserDecks = await UserModel.findByIdAndUpdate(userId, {
+                await UserModel.findByIdAndUpdate(userId, {
                     decks: updatedDecks
-                }, {new: true});
+                });
                 res.status(200).json({status: 200, deck: newDeck});
             } catch (e) {
                 console.log(e);
@@ -79,10 +89,59 @@ exports.create_deck = [
     }
 ];
 
-exports.update_deck = (async (req, res, next) => {
-    //TODO: handle updating deck
-});
+exports.update_deck = [
+    validations.deck_validation,
+    async (req, res, next) => {
+        jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
+            try {
+                if (err) {
+                    res.status(403).json({status: 403, message: errorMessages.VALIDATION_ERROR_MESSAGE});
+                    return;
+                }
+                const {name} = req.body;
+                const curDeck = await DeckModel.findById(req.params.id).exec();
+                if (!curDeck) {
+                    res.status(400).json({status: 400, message: errorMessages.BAD_REQUEST_MESSAGE});
+                    return;
+                }
+                const updatedDeck = await DeckModel.findByIdAndUpdate(req.params.id, {
+                        name: name,
+                    },
+                    {new: true}
+                );
+                res.status(200).json({status: 200, deck: updatedDeck});
+            } catch (e) {
+                console.log(e);
+                res.status(500).json({status: 500, message: errorMessages.SERVER_ERROR_MESSAGE});
+            }
+        })
+    }
+]
 
 exports.delete_deck = (async (req, res, next) => {
-    //TODO: handle deleting deck
+    jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
+        try {
+            if (err) {
+                res.status(403).json({status: 403, message: errorMessages.VALIDATION_ERROR_MESSAGE});
+                return;
+            }
+            const curDeck = await DeckModel.findByIdAndDelete(req.params.id).exec();
+            if (!curDeck) {
+                res.status(400).json({status: 400, message: errorMessages.BAD_REQUEST_MESSAGE});
+                return;
+            }
+            const userId = authData.user._id;
+            const deckOwner = await UserModel.findById(userId).exec();
+            const indexOfDeletedDeck = deckOwner.decks.indexOf(new mongoose.Types.ObjectId(req.params.id));
+            deckOwner.decks.splice(indexOfDeletedDeck,1);
+            await UserModel.findByIdAndUpdate(userId, {
+                decks: deckOwner.decks
+            });
+
+            res.status(200).json({status: 200, message: 'delete deck successfully'});
+        } catch (e) {
+            console.log(e);
+            res.status(500).json({status: 500, message: errorMessages.SERVER_ERROR_MESSAGE});
+        }
+    })
 });
