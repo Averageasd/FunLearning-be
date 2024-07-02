@@ -26,21 +26,14 @@ exports.get_deck_detail = async function (req, res, next) {
 
 exports.get_decks = async (req, res, next) => {
     jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
-        const userId = authData.user._id;
         try {
             if (err) {
                 throw new CustomError(errorMessages.UNAUTHENTICATED_ERROR, 403);
             }
-
+            const userId = authData.user._id;
             const page = req.query.page;
-            let hasMoreItems = true;
-            const allDecksCount = await DeckModel.countDocuments({user: userId}).exec();
-            const skipItemCount = page * constant.DECK_PER_PAGE;
-            if (skipItemCount >= allDecksCount || allDecksCount <= constant.DECK_PER_PAGE) {
-                hasMoreItems = false;
-            }
-            const decks = await DeckModel.find({user: userId}).skip(skipItemCount).limit(constant.DECK_PER_PAGE).lean();
-            res.status(200).json({decks: decks, hasMoreItems: hasMoreItems});
+            const {hasMoreItems, curDecks} = await deckService.get_decks(userId, page);
+            res.status(200).json({decks: curDecks, hasMoreItems: hasMoreItems});
         } catch (e) {
             return next(e);
         }

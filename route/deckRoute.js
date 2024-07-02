@@ -3,7 +3,7 @@ const router = express.Router();
 const deckController = require('../controller/deckController');
 const verifyToken = require('../utility/VerifyToken');
 
-// router.get('/decks', verifyToken, deckController.get_decks);
+router.get('/decks', verifyToken, deckController.get_decks);
 //
 // router.post('/create', verifyToken, deckController.create_deck);
 //
