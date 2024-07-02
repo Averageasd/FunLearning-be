@@ -21,15 +21,15 @@ main().catch((err) => console.log(err));
 
 app.use('/card', cardRoute);
 app.use('/deck', deckRoute);
-app.use('/user', userRoute);
+// app.use('/user', userRoute);
 
 function errorHandler(err, req, res, next) {
-    console.log(err);
-    res.status(err.status).json({status: err.status, message: err.message});
+    console.log('error caught here ', err.message);
+    return res.status(err.statusCode).json({status: err.statusCode, message: err.message});
 }
 
 app.use(errorHandler);
 
-app.app.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 })

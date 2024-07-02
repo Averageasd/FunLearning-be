@@ -1,4 +1,5 @@
 const errorMessages = require('../constant/ErrorMessages');
+const CustomError = require('../CustomErrors/CustomError');
 
 function verifyToken(req, res, next) {
     const bearerHeader = req.headers['authorization'];
@@ -11,7 +12,7 @@ function verifyToken(req, res, next) {
         req.token = bearer[1];
         next();
     } else {
-        res.status(403).json({status: 403, message: errorMessages.UNAUTHENTICATED_ERROR});
+        throw new CustomError(errorMessages.UNAUTHENTICATED_ERROR, 403);
     }
 }
 

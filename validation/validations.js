@@ -1,5 +1,6 @@
 const {body, validationResult} = require("express-validator");
 const errorMessages = require("../constant/ErrorMessages");
+const CustomError = require('../CustomErrors/CustomError');
 
 exports.deck_validation = [
     body("name", "deck name must contain at least 5 characters")
@@ -10,8 +11,7 @@ exports.deck_validation = [
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            res.status(400).json({status: 400, message: errorMessages.VALIDATION_ERROR_MESSAGE, errors});
-            return;
+            throw new CustomError(errorMessages.VALIDATION_ERROR_MESSAGE, 400);
         }
         return next();
     }
@@ -32,8 +32,7 @@ exports.credentials_validation = [
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            res.status(400).json({status: 400, message: errorMessages.VALIDATION_ERROR_MESSAGE, errors});
-            return;
+            throw new CustomError(errorMessages.VALIDATION_ERROR_MESSAGE, 400);
         }
         return next();
     }
