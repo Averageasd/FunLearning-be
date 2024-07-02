@@ -22,6 +22,14 @@ main().catch((err) => console.log(err));
 app.use('/card', cardRoute);
 app.use('/deck', deckRoute);
 app.use('/user', userRoute);
-app.listen(PORT, () => {
+
+function errorHandler(err, req, res, next) {
+    console.log(err);
+    res.status(err.status).json({status: err.status, message: err.message});
+}
+
+app.use(errorHandler);
+
+app.app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 })
