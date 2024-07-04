@@ -8,6 +8,7 @@ const validations = require('../validation/validations');
 const mongoose = require('mongoose');
 const CustomError = require('../CustomErrors/CustomError');
 const deckService = require('../service/deckService');
+const {body} = require("express-validator");
 
 
 exports.get_deck_detail = async function (req, res, next) {
@@ -40,43 +41,27 @@ exports.get_decks = async (req, res, next) => {
     })
 };
 
-// exports.create_deck = [
-//
-//     validations.deck_validation,
-//     async (req, res, next) => {
-//         jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
-//             const userId = authData.user._id;
-//             try {
-//                 if (err) {
-//                     res.status(403).json({status: 403, message: errorMessages.VALIDATION_ERROR_MESSAGE});
-//                     return;
-//                 }
-//                 const newDeck = new DeckModel({
-//                     name: req.body.name,
-//                     user: userId,
-//                 });
-//
-//                 const existingDeck = await DeckModel.findOne({name: newDeck.name, user: userId}).exec();
-//                 if (existingDeck) {
-//                     res.status(400).json({status: 400, message: errorMessages.BAD_REQUEST_MESSAGE});
-//                     return;
-//                 }
-//                 await newDeck.save();
-//                 const curUser = await UserModel.findById(userId).exec();
-//                 const updatedDecks = [...curUser.decks];
-//                 updatedDecks.push(newDeck._id);
-//                 await UserModel.findByIdAndUpdate(userId, {
-//                     decks: updatedDecks
-//                 });
-//                 res.status(200).json({status: 200, deck: newDeck});
-//             } catch (e) {
-//                 console.log(e);
-//                 res.status(500).json({status: 500, message: errorMessages.SERVER_ERROR_MESSAGE});
-//             }
-//         })
-//     }
-// ];
-//
+exports.create_deck = [
+
+    validations.deck_validation,
+    async (req, res, next) => {
+        jwt.verify(req.token, process.env.SECRET_KEY, async (err, authData) => {
+            try {
+                if (err) {
+                    throw new CustomError(errorMessages.UNAUTHENTICATED_ERROR, 403);
+                }
+                const userId = authData.user._id;
+                const {name} = req.body;
+                const newDeck = await deckService.create_deck(userId, name);
+                console.log(newDeck);
+                res.status(200).json({status: 200, deck: newDeck});
+            } catch (e) {
+                return next(e);
+            }
+        })
+    }
+];
+
 // exports.update_deck = [
 //     validations.deck_validation,
 //     async (req, res, next) => {

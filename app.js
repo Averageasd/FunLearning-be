@@ -21,7 +21,7 @@ main().catch((err) => console.log(err));
 
 app.use('/card', cardRoute);
 app.use('/deck', deckRoute);
-// app.use('/user', userRoute);
+app.use('/user', userRoute);
 
 function errorHandler(err, req, res, next) {
     console.log('error caught here ', err.message);

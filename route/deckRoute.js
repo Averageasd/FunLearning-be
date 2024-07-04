@@ -5,7 +5,7 @@ const verifyToken = require('../utility/VerifyToken');
 
 router.get('/decks', verifyToken, deckController.get_decks);
 //
-// router.post('/create', verifyToken, deckController.create_deck);
+router.post('/create', verifyToken, deckController.create_deck);
 //
 // router.post('/update/:id', verifyToken, deckController.update_deck);
 //
